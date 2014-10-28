@@ -49,7 +49,7 @@ unsigned int _line = 0;
 
 \"(\\.|[^\\"])*\"       {   SAVE_STRING; return STRING; }
 
-\'(\\.)|[^\\']\'{1,2}   {   SAVE_STRING; return CHAR;   }
+\'(\\.|[^\\']){1,2}\'   {   SAVE_STRING; return CHAR;   }
 
 "=|"                    {   return TOKEN(ASN_OR);  }
 "=&"                    {   return TOKEN(ASN_AND); }
