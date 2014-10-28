@@ -1,8 +1,8 @@
 /* A Bison parser, made by GNU Bison 3.0.2.  */
 
-/* Skeleton interface for Bison GLR parsers in C
+/* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 2002-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -59,66 +59,30 @@ extern int yydebug;
     RETURN = 268,
     BREAK = 269,
     GOTO = 270,
-    LPAREN = 271,
-    RPAREN = 272,
-    RBRAK = 273,
-    LBRAK = 274,
-    LBRACE = 275,
-    RBRACE = 276,
-    COMMA = 277,
-    SCOLON = 278,
-    COLON = 279,
-    ASSIGN = 280,
-    ASN_ADD = 281,
-    ASN_SUB = 282,
-    ASN_MUL = 283,
-    ASN_DIV = 284,
-    ASN_MOD = 285,
-    ASN_AND = 286,
-    ASN_OR = 287,
-    ASN_XOR = 288,
-    ASN_LSH = 289,
-    ASN_RSH = 290,
-    ASN_EQ = 291,
-    ASN_NQ = 292,
-    ASN_GT = 293,
-    ASN_LT = 294,
-    ASN_GTE = 295,
-    ASN_LTE = 296,
-    MAT_ADD = 297,
-    MAT_DIV = 298,
-    MAT_MOD = 299,
-    UN_INC = 300,
-    UN_DEC = 301,
-    LOG_OR = 302,
-    LOG_AND = 303,
-    LOG_NOT = 304,
-    LOG_EQ = 305,
-    LOG_NQ = 306,
-    LOG_LT = 307,
-    LOG_GT = 308,
-    LOG_LTE = 309,
-    LOG_GTE = 310,
-    LOG_TERNARY = 311,
-    BIT_OR = 312,
-    BIT_XOR = 313,
-    BIT_LSH = 314,
-    BIT_RSH = 315,
-    BIT_NOT = 316,
-    BIT_AND = 317,
-    MAT_MUL = 318,
-    MAT_SUB = 319,
-    LOG_TCONDITIONAL = 320,
-    UN_PREINC = 321,
-    UN_PREDEC = 322,
-    UN_ADDR = 323,
-    UN_DREF = 324,
-    UN_NEG = 325,
-    PARENS_FCALL = 326,
-    VEC_BRAK = 327,
-    UN_POSTINC = 328,
-    UN_POSTDEC = 329,
-    DECL_COMMA = 330
+    ASN_ADD = 271,
+    ASN_SUB = 272,
+    ASN_MUL = 273,
+    ASN_DIV = 274,
+    ASN_MOD = 275,
+    ASN_AND = 276,
+    ASN_OR = 277,
+    ASN_XOR = 278,
+    ASN_LSH = 279,
+    ASN_RSH = 280,
+    ASN_EQ = 281,
+    ASN_NQ = 282,
+    ASN_GT = 283,
+    ASN_LT = 284,
+    ASN_GTE = 285,
+    ASN_LTE = 286,
+    UN_INC = 287,
+    UN_DEC = 288,
+    LOG_LTE = 289,
+    LOG_GTE = 290,
+    BIT_LSH = 291,
+    BIT_RSH = 292,
+    LOG_EQ = 293,
+    LOG_NQ = 294
   };
 #endif
 
@@ -127,16 +91,15 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 21 "blang.y" /* glr.c:2555  */
+#line 21 "blang2.y" /* yacc.c:1909  */
 
     int tval;
-    int token;
     std::string* str;
 
     NDefinition*    definition;
     NName*          name;
 
-#line 140 "blang.tab.hpp" /* glr.c:2555  */
+#line 103 "blang.tab.hpp" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

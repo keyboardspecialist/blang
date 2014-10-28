@@ -20,7 +20,6 @@ NProgram* blangProgram;
 %union 
 {
     int tval;
-    int token;
     std::string* str;
 
     NDefinition*    definition;
@@ -30,199 +29,252 @@ NProgram* blangProgram;
 %token <str> WORD
 %token <str> IDENT
 
-%token <token> AUTO EXTRN IF ELSE WHILE SWITCH CASE DEFAULT RETURN BREAK GOTO 
-%token <token> LPAREN RPAREN RBRAK LBRAK LBRACE RBRACE COMMA SCOLON COLON
-%token <token> ASSIGN ASN_ADD ASN_SUB ASN_MUL ASN_DIV ASN_MOD ASN_AND ASN_OR ASN_XOR ASN_LSH ASN_RSH ASN_EQ ASN_NQ ASN_GT ASN_LT ASN_GTE ASN_LTE
-%token <token> MAT_ADD MAT_DIV MAT_MOD UN_INC UN_DEC
-%token <token> LOG_OR LOG_AND LOG_NOT LOG_EQ LOG_NQ LOG_LT LOG_GT LOG_LTE LOG_GTE LOG_TERNARY
-%token <token> BIT_OR BIT_XOR BIT_LSH BIT_RSH BIT_NOT
-%token <token> BIT_AND 
-%token <token> MAT_MUL 
-%token <token> MAT_SUB 
-
-%type <definition>  program
-%type <name>        name
-
-
-//precedence is top down, low to high
-
-%left COMMA
-
-%right ASSIGN ASN_ADD ASN_SUB ASN_MUL ASN_DIV ASN_MOD ASN_AND ASN_OR ASN_XOR ASN_LSH ASN_RSH ASN_EQ ASN_NQ ASN_GT ASN_LT ASN_GTE ASN_LTE
-
-//LOG_TCONDITIONAL is :
-%right LOG_TERNARY LOG_TCONDITIONAL
-
-%left LOG_OR
-%left LOG_AND
-
-%left BIT_OR
-%left BIT_XOR
-%left BIT_AND
-
-%left LOG_EQ LOG_NQ
-%left LOG_LT LOG_GT LOG_LTE LOG_GTE
-
-%left BIT_LSH BIT_RSH
-
-%left MAT_ADD MAT_SUB 
-%left MAT_MUL MAT_DIV MAT_MOD
-
-//operators & * - will need a second context precedence for unary
-%right LOG_NOT UN_PREINC UN_PREDEC UN_ADDR UN_DREF UN_NEG BIT_NOT
-
-// () [] high precedence
-%left PARENS_FCALL VEC_BRAK UN_POSTINC UN_POSTDEC 
-
-%nonassoc LBRAK RBRAK
-%nonassoc LPAREN RPAREN
-%nonassoc LBRACE RBRACE
-%nonassoc DECL_COMMA SCOLON COLON
+%token AUTO EXTRN IF ELSE WHILE SWITCH CASE DEFAULT RETURN BREAK GOTO 
+%token ASN_ADD ASN_SUB ASN_MUL ASN_DIV ASN_MOD ASN_AND ASN_OR ASN_XOR 
+%token ASN_LSH ASN_RSH ASN_EQ ASN_NQ ASN_GT ASN_LT ASN_GTE ASN_LTE
+%token UN_INC UN_DEC LOG_LTE LOG_GTE BIT_LSH BIT_RSH LOG_EQ LOG_NQ
 
 %token END 0 "end of file"
 
-%glr-parser
-
-%start program
+%start blang_program
 %%
 
-program : definitions { /*blangProgram = $1;*/ }
-        ;
+blang_program
+    : extrn_definition
+    | blang_program extrn_definition
+    ;
 
-definitions : definition //{ $$ = new NProgram(); $$->m_extrnDefs.push_back($<definition>1); }
-            | definitions definition //{ $1->m_extrnDefs.push_back($<definition>2); }
-            ;
+extrn_definition  
+    : extrn_decl ';'
+    | func_decl
+    ;
 
-definition  : extrn_decl SCOLON | func_decl
-            ;
+extrn_decl  
+    : decl
+    | decl ival_list
+    ;
 
-extrn_decl  : name 
-            | extrn_vector_decl
-            ;
+func_decl   
+    : name func_decl_args statement
+    ;
 
+func_decl_args  
+    : '('               ')'
+    | '('   name_list   ')'
+    ;
 
-extrn_vector_decl : name LBRAK RBRAK
-                  | name LBRAK constant RBRAK
-                  | extrn_vector_decl vec_init_list
-                  ;
+name_list
+    : name
+    | name_list ',' name
+    ;
 
-vec_init_list   : ival
-                | vec_init_list COMMA ival %prec DECL_COMMA
-                ;
+ival_list
+    : ival
+    | ival_list ',' ival
+    ;
 
-func_decl   : name LPAREN func_decl_args RPAREN statement
-            ;
+decl
+    : name
+    | name '['          ']'
+    | name '[' constant ']'
+    ;
 
-func_decl_args  : /* empty */ { }
-                | name
-                | func_decl_args COMMA name %prec DECL_COMMA
-                ;
+statement   
+    : labeled_statement  
+    | statement_block
+    | selection_statement
+    | while_statement          
+    | jump_statement
+    | expression_statement
+    ;
 
+labeled_statement
+    : name          ':' statement
+    | CASE constant ':' statement
+    | DEFAULT       ':' statement
+    ;
 
-statement   : auto_decl             SCOLON  
-            | extrn_decl_local      SCOLON  
-            | name                  COLON   
-            | case_statement
-            | statement_block
-            | if_statement
-            | while_statement       
-            | switch_statement     
-            | GOTO      rvalue      SCOLON
-            | RETURN    rvalue      SCOLON
-            | RETURN                SCOLON
-            | rvalue                SCOLON
-            | BREAK                 SCOLON
-            | SCOLON
-            ;
+statement_block 
+    : '{'                   '}'
+    | '{' local_decl_list   '}'
+    | '{' statement_list    '}'
+    | '{' local_decl_list statement_list '}'
+    ;
 
-statement_block : LBRACE RBRACE
-                | LBRACE statements RBRACE
-                ;
+local_decl
+    : auto_decl         ';'
+    | extrn_decl_local  ';'
+    ;
 
-statements  : statement
-            | statements statement
-            ;
+local_decl_list
+    : local_decl
+    | local_decl_list local_decl
+    ;
 
-auto_decl   : initial_auto
-            | auto_decl COMMA auto_list
-            ;
+auto_decl   
+    : AUTO auto_decl_list
+    ;
 
-initial_auto : AUTO name
-             | AUTO name LBRAK RBRAK
-             | AUTO name LBRAK constant RBRAK
-             ;
+auto_decl_list
+    : decl
+    | auto_decl_list ',' decl
+    ;
 
+extrn_decl_local    
+    : EXTRN name_list
+    ;
 
-next_auto   : name
-            | name LBRAK RBRAK
-            | name LBRAK constant RBRAK
-            ;
+statement_list  
+    : statement
+    | statement_list statement
+    ;
 
-auto_list   : next_auto
-            | auto_list COMMA next_auto
-            ;
+selection_statement
+    : if_statement
+    | switch_statement
+    ;
 
-extrn_decl_local    : EXTRN name
-                    | extrn_decl_local COMMA extrn_decl_loc_list
-                    ;
+if_statement 
+    : IF '(' expression ')' statement
+    | IF '(' expression ')' statement ELSE statement
+    ;
 
-extrn_decl_loc_list : name
-                    | extrn_decl_loc_list COMMA name
-                    ;
+switch_statement 
+    : SWITCH expression statement
+    ;
 
+while_statement 
+    : WHILE '(' expression ')' statement
+    ;
 
-if_statement : IF LPAREN rvalue RPAREN statement
-             | IF LPAREN rvalue RPAREN statement ELSE statement
-             ;
+jump_statement
+    : GOTO name ';'
+    | BREAK     ';'
+    | RETURN    ';'
+    | RETURN expression ';'
+    ;
 
-while_statement : WHILE LPAREN rvalue RPAREN statement
-                ;
+expression_statement
+    : ';'
+    | expression ';'
+    ;
 
-switch_statement : SWITCH rvalue statement
-                 ;
+primary_expression
+    : ival
+    | '(' expression ')'
+    ;
 
-case_statement  : CASE constant COLON statement
-                | DEFAULT COLON statement
-                ;
+postfix_expression
+    : primary_expression
+    | postfix_expression '[' expression ']'
+    | postfix_expression '('            ')'
+    | postfix_expression '(' arg_expression_list ')'
+    | postfix_expression UN_INC
+    | postfix_expression UN_DEC
+    ;
 
+arg_expression_list
+    : assignment_expression
+    | arg_expression_list ',' assignment_expression
+    ;
 
-rvalue      : LPAREN rvalue RPAREN %prec PARENS_FCALL
-            | assignment
-            | UN_INC lvalue %prec UN_PREINC 
-            | UN_DEC lvalue %prec UN_PREDEC 
-            | lvalue UN_INC %prec UN_POSTINC
-            | lvalue UN_DEC %prec UN_POSTDEC
-            | BIT_AND lvalue %prec UN_ADDR      
-            | MAT_SUB rvalue %prec UN_NEG
-            | constant 
-            | LOG_NOT rvalue
-            | BIT_NOT rvalue
-            | binary
-            | rvalue LOG_TERNARY rvalue COLON rvalue %prec LOG_TCONDITIONAL
-            | rvalue LPAREN call_args RPAREN %prec PARENS_FCALL
-            | lvalue %dprec 1
-            ;
+unary_expression
+    : postfix_expression
+    | UN_INC unary_expression
+    | UN_DEC unary_expression
+    | unary_operator multiplicative_expression
+    ;
 
-call_args   : /* empty */
-            | rvalue
-            | call_args COMMA rvalue
-            ;
+unary_operator
+    : '&'
+    | '*'
+    | '-'
+    | '!'
+    | '~'
+    ;
 
-lvalue      : name
-            | MAT_MUL rvalue %prec UN_DREF
-            | rvalue LBRAK rvalue RBRAK %prec VEC_BRAK
-            ;
+multiplicative_expression
+    : unary_expression
+    | multiplicative_expression '*' unary_expression
+    | multiplicative_expression '/' unary_expression
+    | multiplicative_expression '%' unary_expression
+    ;
 
-assignment  : lvalue ASSIGN rvalue | lvalue ASN_ADD rvalue | lvalue ASN_SUB rvalue | lvalue ASN_MUL rvalue | lvalue ASN_DIV rvalue | lvalue ASN_MOD rvalue 
-            | lvalue ASN_AND rvalue | lvalue ASN_OR rvalue | lvalue ASN_XOR rvalue | lvalue ASN_LSH rvalue | lvalue ASN_RSH rvalue | lvalue ASN_EQ rvalue
-            | lvalue ASN_NQ  rvalue | lvalue ASN_GT rvalue | lvalue ASN_LT rvalue  | lvalue ASN_GTE rvalue | lvalue ASN_LTE rvalue
-            ;
+additive_expression
+    : multiplicative_expression
+    | additive_expression '+' multiplicative_expression
+    | additive_expression '-' multiplicative_expression
+    ;
 
-binary      : rvalue MAT_ADD rvalue | rvalue MAT_SUB rvalue | rvalue MAT_MUL rvalue | rvalue MAT_DIV rvalue | rvalue MAT_MOD rvalue
-            | rvalue BIT_OR rvalue | rvalue BIT_XOR rvalue | rvalue BIT_AND rvalue | rvalue BIT_LSH rvalue | rvalue BIT_RSH rvalue
-            | rvalue LOG_LT rvalue | rvalue LOG_LTE rvalue | rvalue LOG_GT rvalue | rvalue LOG_GTE rvalue | rvalue LOG_EQ rvalue 
-            | rvalue LOG_NQ rvalue | rvalue LOG_AND rvalue | rvalue LOG_OR rvalue
-            ;
+shift_expression
+    : additive_expression
+    | shift_expression BIT_LSH additive_expression
+    | shift_expression BIT_RSH additive_expression
+    ;
+
+relational_expression
+    : shift_expression
+    | relational_expression '<' shift_expression
+    | relational_expression '>' shift_expression
+    | relational_expression LOG_LTE shift_expression
+    | relational_expression LOG_GTE shift_expression
+    ;
+
+equality_expression
+    : relational_expression
+    | equality_expression LOG_EQ relational_expression
+    | equality_expression LOG_NQ relational_expression
+    ;
+
+bitwise_and_expression
+    : equality_expression
+    | bitwise_and_expression '&' equality_expression
+    ;
+
+bitwise_xor_expression
+    : bitwise_and_expression
+    | bitwise_xor_expression '^' bitwise_and_expression
+    ;
+
+bitwise_or_expression
+    : bitwise_xor_expression
+    | bitwise_or_expression '|' bitwise_xor_expression
+    ;
+
+conditional_expression
+    : bitwise_or_expression
+    | bitwise_or_expression '?' expression ':' conditional_expression
+    ;
+
+assignment_expression
+    : conditional_expression
+    | unary_expression assignment_operator assignment_expression
+    ;
+
+assignment_operator
+    : '='
+    | ASN_ADD
+    | ASN_SUB
+    | ASN_MUL
+    | ASN_DIV
+    | ASN_MOD 
+    | ASN_AND
+    | ASN_OR
+    | ASN_XOR
+    | ASN_LSH
+    | ASN_RSH
+    | ASN_EQ
+    | ASN_NQ
+    | ASN_GT
+    | ASN_LT
+    | ASN_GTE
+    | ASN_LTE
+    ;
+
+expression
+    : assignment_expression
+    ;
+
 
 ival        : name
             | constant
