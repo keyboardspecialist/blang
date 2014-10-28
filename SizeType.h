@@ -20,10 +20,24 @@
 
 #           define BLANG_SIZE int64_t
 #       endif
+
+
+#       define BLANG_IS64       
+
+
 #   endif
 #else
 #   pragma message "Building for 32-bit. SizeType int"
 #   define BLANG_SIZE int
 #endif
 
-typedef BLANG_SIZE SizeType;
+
+
+#define overrides virtual
+
+
+
+namespace Blang
+{
+    typedef BLANG_SIZE SizeType;
+}

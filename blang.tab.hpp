@@ -47,42 +47,44 @@ extern int yydebug;
   {
     END = 0,
     WORD = 258,
-    IDENT = 259,
-    AUTO = 260,
-    EXTRN = 261,
-    IF = 262,
-    ELSE = 263,
-    WHILE = 264,
-    SWITCH = 265,
-    CASE = 266,
-    DEFAULT = 267,
-    RETURN = 268,
-    BREAK = 269,
-    GOTO = 270,
-    ASN_ADD = 271,
-    ASN_SUB = 272,
-    ASN_MUL = 273,
-    ASN_DIV = 274,
-    ASN_MOD = 275,
-    ASN_AND = 276,
-    ASN_OR = 277,
-    ASN_XOR = 278,
-    ASN_LSH = 279,
-    ASN_RSH = 280,
-    ASN_EQ = 281,
-    ASN_NQ = 282,
-    ASN_GT = 283,
-    ASN_LT = 284,
-    ASN_GTE = 285,
-    ASN_LTE = 286,
-    UN_INC = 287,
-    UN_DEC = 288,
-    LOG_LTE = 289,
-    LOG_GTE = 290,
-    BIT_LSH = 291,
-    BIT_RSH = 292,
-    LOG_EQ = 293,
-    LOG_NQ = 294
+    STRING = 259,
+    CHAR = 260,
+    IDENT = 261,
+    AUTO = 262,
+    EXTRN = 263,
+    IF = 264,
+    ELSE = 265,
+    WHILE = 266,
+    SWITCH = 267,
+    CASE = 268,
+    DEFAULT = 269,
+    RETURN = 270,
+    BREAK = 271,
+    GOTO = 272,
+    ASN_ADD = 273,
+    ASN_SUB = 274,
+    ASN_MUL = 275,
+    ASN_DIV = 276,
+    ASN_MOD = 277,
+    ASN_AND = 278,
+    ASN_OR = 279,
+    ASN_XOR = 280,
+    ASN_LSH = 281,
+    ASN_RSH = 282,
+    ASN_EQ = 283,
+    ASN_NQ = 284,
+    ASN_GT = 285,
+    ASN_LT = 286,
+    ASN_GTE = 287,
+    ASN_LTE = 288,
+    UN_INC = 289,
+    UN_DEC = 290,
+    LOG_LTE = 291,
+    LOG_GTE = 292,
+    BIT_LSH = 293,
+    BIT_RSH = 294,
+    LOG_EQ = 295,
+    LOG_NQ = 296
   };
 #endif
 
@@ -91,15 +93,15 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 21 "blang2.y" /* yacc.c:1909  */
+#line 22 "blang.y" /* yacc.c:1909  */
 
-    int tval;
+    Blang::SizeType word;
     std::string* str;
 
-    NDefinition*    definition;
-    NName*          name;
+    Blang::NDefinition*    definition;
+    Blang::NName*          name;
 
-#line 103 "blang.tab.hpp" /* yacc.c:1909  */
+#line 105 "blang.tab.hpp" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

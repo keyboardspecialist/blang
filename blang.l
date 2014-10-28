@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 
+#include "SizeType.h"
 #include "astnode.h"
 #include "blang.tab.hpp"
 
@@ -9,10 +10,15 @@ using namespace std;
 
 #define YY_DECL extern "C" int yylex()
 
-#define SAVE_TOKEN  yylval.str = new string(yytext, yyleng);
+#define SAVE_STRING  yylval.str = new string(yytext, yyleng);
 #define TOKEN(t)    t
 
+
+Blang::SizeType tokToST(const char* tok);
+
+
 unsigned int _line = 0;
+
 %}
 
 %option stack
@@ -36,8 +42,14 @@ unsigned int _line = 0;
 "goto"                  {   return TOKEN(GOTO);     }
 "return"                {   return TOKEN(RETURN);   }
 
-[a-zA-Z_][a-zA-Z0-9_]*  {   SAVE_TOKEN; return IDENT; }
-[0-9]+                  {   SAVE_TOKEN; return WORD;  }
+[a-zA-Z_][a-zA-Z0-9_]*  {   SAVE_STRING; return IDENT; }
+
+[0-9]+                  {   yylval.word = tokToST(yytext);   
+                            return WORD;  }
+
+\"(\\.|[^\\"])*\"       {   SAVE_STRING; return STRING; }
+
+\'(\\.)|[^\\']\'{1,2}   {   SAVE_STRING; return CHAR;   }
 
 "=|"                    {   return TOKEN(ASN_OR);  }
 "=&"                    {   return TOKEN(ASN_AND); }
@@ -101,3 +113,22 @@ unsigned int _line = 0;
      \n                {_line++;}
 }
 %%
+
+Blang::SizeType
+tokToST(const char* tok)
+{
+    char* p;
+    Blang::SizeType out;
+
+#ifdef BLANG_IS64
+    
+    out = strtoll(tok, &p, 10);
+
+#else
+    
+    out = strtol(tok, &p, 10);
+
+#endif
+
+    return out;
+}

@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <iostream>
 
+#include "SizeType.h"
 #include "astnode.h"
 
 using namespace std;
@@ -12,22 +13,26 @@ extern "C" FILE*    yyin;
 
 void yyerror(const char* err);
 
-NProgram* blangProgram;
+Blang::NProgram* blangProgram;
 
 %}
 
 
 %union 
 {
-    int tval;
+    Blang::SizeType word;
     std::string* str;
 
-    NDefinition*    definition;
-    NName*          name;
+    Blang::NDefinition*    definition;
+    Blang::NName*          name;
 }
 
-%token <str> WORD
+%token <word> WORD
+%token <str> STRING
+%token <str> CHAR
+
 %token <str> IDENT
+
 
 %token AUTO EXTRN IF ELSE WHILE SWITCH CASE DEFAULT RETURN BREAK GOTO 
 %token ASN_ADD ASN_SUB ASN_MUL ASN_DIV ASN_MOD ASN_AND ASN_OR ASN_XOR 
@@ -276,15 +281,21 @@ expression
     ;
 
 
-ival        : name
-            | constant
-            ;
+ival        
+    : name
+    | constant
+    ;
 
-name        : IDENT { }
-            ;
+name        
+    : IDENT { }
+    ;
 
-constant    : WORD { }
-            ;
+constant    
+    : WORD      { cout << $1 << endl; }
+    | STRING    { cout << *$1 << endl; }
+    | CHAR      { cout << *$1 << endl; }
+    ;
+
 %%
 
 int
