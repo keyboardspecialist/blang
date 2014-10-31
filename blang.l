@@ -42,7 +42,7 @@ unsigned int _line = 0;
 "goto"                  {   return TOKEN(GOTO);     }
 "return"                {   return TOKEN(RETURN);   }
 
-[a-zA-Z_][a-zA-Z0-9_]*  {   SAVE_STRING; return IDENT; }
+[a-zA-Z_][a-zA-Z0-9_.]* {   SAVE_STRING; return IDENT; }
 
 [0-9]+                  {   yylval.word = tokToST(yytext);   
                             return WORD;  }
