@@ -2,56 +2,58 @@
 
 #include <iostream>
 #include <vector>
-//#include <llvm/IR/Value.h>
+#include <llvm/IR/Value.h>
 
 #include "SizeType.h"
-
-#define overrides virtual
 
 
 namespace Blang
 {
 
     class CodeGenContext;
-    class NDefinition;
-    class NStatement;
-    class NAutoDecl;
+    class ExtrnDefinitionAST;
+    class StatementAST;
+    class AutoDeclAST;
 
-    typedef std::vector<NStatement*>    StatementList;
-    typedef std::vector<NDefinition*>   DefinitionList; //declared extrn's
-    typedef std::vector<NAutoDecl*>     AutoDeclList;
+    typedef std::vector<StatementAST*>    		StatementASTList;
+    typedef std::vector<ExtrnDefinitionAST*>	ExtrnDefinitionLASTist;
+    typedef std::vector<AutoDeclAST*>     		AutoDeclASTList;
 
 
-    class Node
+    class NodeAST
     {
     public:
-        virtual ~Node() {};
-    //    virtual llvm::Value* CodeGen(CodeGenContext& context) { }
+        virtual ~NodeAST() {};
+        virtual llvm::Value* CodeGen(CodeGenContext& context) { }
     };
 
-    class NDefinition : public Node
+    class ExtrnDefinitionAST : public NodeAST
     {
     public:
-        NDefinition() {};
-    //    overrides llvm::Value* CodeGen(CodeGenContext& context);
+        ExtrnDefinitionAST() {};
+        overrides llvm::Value* CodeGen(CodeGenContext& context);
     };
 
 
-    class NProgram : public NDefinition
+    class ProgramAST
     {
     public:
-        NProgram() {};
+        ProgramAST() {};
 
-        DefinitionList m_extrnDefs;
-    //    overrides llvm::Value* CodeGen(CodeGenContext& context);
+        ExtrnDefinitionASTList m_extrnDefs;
+        overrides llvm::Value* CodeGen(CodeGenContext& context);
     };
 
-    class NRValue : public Node
+    class ExpressionAST : public NodeAST
     {
+    public:
+    	ExpressionAST() {};
+
+    	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
     };
 
-    class NLValue : public Node
+    class  : public Node
     {
 
     };
@@ -62,22 +64,22 @@ namespace Blang
 
     };
 
-    class NStatement : public Node
+    class StatementAST : public NodeAST
     {
 
     };
 
-    class NIVal : public Node
+    class IValAST : public NodeAST
     {
 
     };
 
-    class NConstant : public NIVal
+    class ConstantAST : public IValAST
     {
     public:
-        SizeType val;
-        NConstant(SizeType v) : val(v) {};
-    //    overrides llvm::Value* CodeGen(CodeGenContext& context);
+        SizeType ;
+        ConstantAST(SizeType v) : val(v) {};
+        overrides llvm::Value* CodeGen(CodeGenContext& context);
     };
 
     class NName : public NIVal
