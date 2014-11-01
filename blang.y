@@ -28,7 +28,6 @@ const Blang::NameASTList 	g_emptyNameList;
     
     Blang::SizeType 		word;
 	Blang::AssignOp_t		assign;
-	Blang::BinaryOp_t		binary;
 	Blang::UnaryOp_t		unary;
 	
 	Blang::ProgramAST*		program;
@@ -40,7 +39,8 @@ const Blang::NameASTList 	g_emptyNameList;
     Blang::AutoDeclAST*		adecl;
     Blang::DeclAST*			decl;
     
-    Blang::AssignmentAST*	assign_expr;
+    Blang::ConstExprAST*	const_expr;
+
     Blang::StatementAST*	statement;
     Blang::ExpressionAST*	expression;
     Blang::NameAST*   		name;
@@ -65,31 +65,31 @@ const Blang::NameASTList 	g_emptyNameList;
 
 %type <program> extrn_definition_list
 
-%type <definition> extrn_definition
+%type <definition> extrn_definition func_decl extrn_decl
 %type <decl> decl
-%type <extrn_decl> extrn_decl
-%type <func> func_decl
+
+
 %type <adecl> adecl
+%type <name> name
 
-
-%type <statement> statement local_decl if_statement while_statement switch_statement jump_statement statement_block
+%type <statement> statement local_decl if_statement while_statement switch_statement jump_statement statement_block labeled_statement  selection_statement
+%type <statement> expression_statement
 
 
 %type <assign>		assignment_operator
-%type <assign_expr> assignment_expression
 
 %type <unary>  		unary_operator
 %type <expression> 	unary_expression
 
-%type <binary> 		binary_operator
-%type <expression>  conditional_expression bitwise_or_expression bitwise_xor_expression bitwise_and_expression 
-%type <expression>  equality_expression relational_expression shift_expression additive_expression multiplicative_expression expression
+%type <expression>  assignment_expression
+%type <expression>  conditional_expression bitwise_or_expression bitwise_xor_expression bitwise_and_expression  postfix_expression primary_expression ival
+%type <expression>  equality_expression relational_expression shift_expression additive_expression multiplicative_expression expression constant
 
 
 %type <ival_list> ival_list
 %type <name_list> name_list func_decl_parms extrn_decl_local
 %type <statement_list> local_decl_list statement_list
-%type <auto_decl_list> auto_decl_list
+%type <auto_decl_list> auto_decl_list auto_decl
 %type <expression_list> arg_expression_list
 
 
@@ -113,7 +113,7 @@ extrn_definition_list
 	
 extrn_definition  
     : extrn_decl ';'					{ $$ = $<definition>1; }
-    | func_decl
+    | func_decl							{ $$ = $<definition>1; }
     ;
 
 extrn_decl  
@@ -349,8 +349,8 @@ expression
 
 
 ival        
-    : name
-    | constant
+    : name		{ $$ = $<expression>1; }
+    | constant	{ $$ = $<expression>1; }
     ;
 
 name        
