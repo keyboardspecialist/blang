@@ -1620,7 +1620,7 @@ yyreduce:
 
   case 26:
 #line 152 "blang.y" /* yacc.c:1646  */
-    { (yyval.statement) = new Blang::CaseStatementAST ( (yyvsp[-3].constant), (yyvsp[-1].statement) ); }
+    { (yyval.statement) = new Blang::CaseStatementAST ( (yyvsp[-2].constant), (yyvsp[0].statement) ); }
 #line 1625 "blang.tab.cpp" /* yacc.c:1646  */
     break;
 
@@ -2132,7 +2132,7 @@ yyreduce:
 
   case 127:
 #line 361 "blang.y" /* yacc.c:1646  */
-    { (yyval.expression) = new Blang::WordConstantAST((yyvsp[0].word)); }
+    { (yyval.expression) = new Blang::WordConstantAST((yyvsp[0].word)); printf("WORD: %ld\n", (yyvsp[0].word)); }
 #line 2137 "blang.tab.cpp" /* yacc.c:1646  */
     break;
 

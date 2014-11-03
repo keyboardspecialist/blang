@@ -11,15 +11,17 @@ loop :
 		putchar(c);
 	}
 	x = *adx++;
-	switch c = char(fmt,i++) {
+
+	
+	switch (c = char(fmt,i++)) {
 
 	case 'd': /* decimal */
-	case 'o': /* octal */
+	case 'o': /* octal */ 
 		if(x < O) {
 			x = -x ;
 			putchar('-');
 		}
-		printn(x, c=='o'?8:1O);
+		printn(x, c=='o'?8:10); 
 		goto loop;
 
 	case 'c' : /* char */
@@ -27,7 +29,7 @@ loop :
 		goto loop;
 
 	case 's': /* string */
-		while(c=char(x, j++)) != '*e')
+		while((c=char(x, j++)) != '*e')
 			putchar(c);
 		goto loop;
 	}
@@ -35,4 +37,5 @@ loop :
 	i--;
 	adx--;
 	goto loop;
+
 }

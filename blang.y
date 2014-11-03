@@ -149,7 +149,7 @@ statement
 
 labeled_statement
     : name          ':' statement				{ $$ = new Blang::LabelStatementAST( $<name>1, $<statement>3 ); /*labels are always internal storage*/ }
-    | CASE constant ':' statement				{ $$ = new Blang::CaseStatementAST ( $<constant>1, $<statement>3 ); }
+    | CASE constant ':' statement				{ $$ = new Blang::CaseStatementAST ( $<constant>2, $<statement>4 ); }
     | DEFAULT       ':' statement				{ $$ = new Blang::CaseStatementAST ( $<statement>3 ); }
     ;
 
@@ -358,7 +358,7 @@ name
     ;
 
 constant    
-    : WORD      { $$ = new Blang::WordConstantAST($1); }
+    : WORD      { $$ = new Blang::WordConstantAST($1); printf("WORD: %ld\n", $1); }
     | STRING    { $$ = new Blang::StringConstantAST(*$1); delete $1; }
     | CHAR      { $$ = new Blang::CharConstantAST(*$1);   delete $1; }
     ;

@@ -937,7 +937,7 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 48 "blang.l"
-{   yylval.word = numToST(yytext);   
+{   yylval.word = numToST(yytext);  
                             return WORD;  }
 	YY_BREAK
 case 15:
@@ -950,7 +950,7 @@ case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
 #line 53 "blang.l"
-{   SAVE_STRING; puts(yylval.str->c_str()); return CHAR;   }
+{   SAVE_STRING; printf("CHAR: %s\n", yylval.str->c_str()); return CHAR;   }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP

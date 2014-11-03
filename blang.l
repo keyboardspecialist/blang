@@ -45,12 +45,12 @@ unsigned int _line = 0;
 
 [a-zA-Z_][a-zA-Z0-9_.]* {   SAVE_STRING; return IDENT; }
 
-[0-9]+                  {   yylval.word = numToST(yytext);   
+[0-9]+                  {   yylval.word = numToST(yytext);  
                             return WORD;  }
 
 \"(\\.|[^\\"])*\"       {   SAVE_STRING; puts(yylval.str->c_str()); return STRING; }
 
-\'(\\.|[^\\']){1,8}\'   {   SAVE_STRING; puts(yylval.str->c_str()); return CHAR;   }
+\'(\\.|[^\\']){1,8}\'   {   SAVE_STRING; printf("CHAR: %s\n", yylval.str->c_str()); return CHAR;   }
 
 "=|"                    {   return TOKEN(ASN_OR);  }
 "=&"                    {   return TOKEN(ASN_AND); }

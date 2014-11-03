@@ -8,13 +8,17 @@ main()
     a = 3;
     b = &x;
     z[a] = ++*b++;
+
+    if(x != 'sdfsdf')
+    {}
+
     while(z)
     {
        if(z[b?a++-c[a=^*b]:4&b])
         {
             switch( x )
             {
-                case 1:
+                case '1':
                 foo(x, y, z);
                 break;
                 default: {}
