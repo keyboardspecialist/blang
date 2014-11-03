@@ -93,15 +93,35 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 22 "blang.y" /* yacc.c:1909  */
+#line 24 "blang.y" /* yacc.c:1909  */
 
-    Blang::SizeType word;
-    std::string* str;
+	std::string* str;
+    
+    
+    Blang::SizeType 		word;
+	Blang::AssignOp_t		assign;
+	Blang::UnaryOp_t		unary;
+	
+	Blang::ProgramAST*		program;
+	
+    Blang::ExtrnDefAST*		definition;
+    Blang::AutoDeclAST*		adecl;
+    Blang::DeclAST*			decl;
 
-    Blang::NDefinition*    definition;
-    Blang::NName*          name;
+    Blang::ConstExprAST*    constant, *ival;
 
-#line 105 "blang.tab.hpp" /* yacc.c:1909  */
+    Blang::StatementAST*	statement;
+    Blang::ExpressionAST*	expression;
+    Blang::NameAST*   		name;
+    
+    Blang::StatementASTList*	statement_list;
+    Blang::AutoDeclASTList*		auto_decl_list;
+    Blang::ExpressionASTList*	expression_list;
+    Blang::NameASTList*			name_list;
+    Blang::ConstExprASTList*	ival_list;
+   
+
+#line 125 "blang.tab.hpp" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

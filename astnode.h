@@ -16,15 +16,15 @@ namespace Blang
     struct ExpressionAST;
     struct AutoDeclAST;
     struct ExtrnDeclAST;
-    struct IValAST;
+    struct ConstExprAST;
     struct NameAST;
 
     typedef std::vector<StatementAST*>    		StatementASTList;
     typedef std::vector<ExpressionAST*>			ExpressionASTList;
     typedef std::vector<ExtrnDefAST*>			ExtrnDefASTList;
     typedef std::vector<AutoDeclAST*>     		AutoDeclASTList;
-    typedef std::vector<ExtrnDeclAST*>			ExtrnDeclASTList;
-    typedef std::vector<IValAST*>				IValASTList;
+   // typedef std::vector<ExtrnDeclAST*>			ExtrnDeclASTList;
+    typedef std::vector<ConstExprAST*>  		ConstExprASTList;
     typedef std::vector<NameAST*>				NameASTList;
 
     typedef enum 	{	kAssign, kAddAssign, kSubAssign, kMulAssign, kDivAssign, kModAssign,
@@ -33,7 +33,7 @@ namespace Blang
     				} AssignOp_t;
 
     typedef enum 	{	kAdd, kSub, kMul, kDiv, kMod, kOr, kAnd, kXor, kLshift, kRshift, kLess,
-    					kLessEq, kGreater, kGreaterEq, kEqual, kNotEqual
+    					kLessEq, kGreater, kGreaterEq, kEqual, kNotEqual, kLogOr, kLogAnd
     				} BinaryOp_t;
 
     typedef enum	{	kDecr, kIncr, kLogNot, kBitNot, kDeRef, kAddrOf, kNegate
@@ -47,11 +47,12 @@ namespace Blang
 
     struct NodeAST
     {
+        NodeAST() {};
         virtual ~NodeAST() {};
-        virtual llvm::Value* CodeGen(CodeGenContext& context) {return NULL;};
+        virtual llvm::Value* CodeGen(CodeGenContext& context) {return NULL;}
     };
 
-    struct ProgramAST : NodeAST
+    struct ProgramAST : public NodeAST
     {
         ProgramAST() {};
         ~ProgramAST() {};
@@ -61,17 +62,29 @@ namespace Blang
         ExtrnDefASTList m_extrnDefs;
     };
 
+    struct ExpressionAST : public NodeAST
+    {
+        ExpressionAST() {};
+        virtual ~ExpressionAST() {};
+    };
+
+    struct ConstExprAST : ExpressionAST
+    {
+        ConstExprAST() {};
+        virtual ~ConstExprAST(){};
+    };
+
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 ///// DECLARATION BASE STRUCTS
 
-    struct ExtrnDefAST : NodeAST
+    struct ExtrnDefAST : public NodeAST
     {
         ExtrnDefAST() {};
         virtual ~ExtrnDefAST() {};
     };
 
-    struct DeclAST : NodeAST
+    struct DeclAST : public NodeAST
     {
     	DeclAST(NameAST* name)
     	: m_name(name)
@@ -83,10 +96,10 @@ namespace Blang
     	StorageClass_t	m_storage = kExtrn;
     };
 
-    struct VectorDeclAST : NodeAST
+    struct VectorDeclAST : public DeclAST
     {
     	VectorDeclAST(NameAST* name, ConstExprAST* size)
-    	: m_name(name),
+    	: DeclAST(name),
 		  m_size(size)
     	{};
 
@@ -94,26 +107,14 @@ namespace Blang
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
-    	NameAST* 		m_name;
     	ConstExprAST* 	m_size;
     };
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 ///// EXPRESSIONS
-    struct ExpressionAST : NodeAST
-    {
-    	ExpressionAST() {};
-    	virtual ~ExpressionAST() {};
-    };
 
-    struct ConstExprAST : ExpressionAST
-    {
-    	ConstExprAST() {};
-    	virtual ~ConstExprAST(){};
-    };
-
-    struct WordConstantAST : ConstExprAST
+    struct WordConstantAST : public ConstExprAST
     {
         WordConstantAST(SizeType constExpr)
         : m_val(constExpr)
@@ -124,49 +125,35 @@ namespace Blang
         SizeType		m_val;
     };
 
-    struct StringConstantAST : ConstExprAST
+    struct StringConstantAST : public ConstExprAST
     {
     	StringConstantAST(std::string& literal)
     	: m_literal(literal)
-    	{
-    		strip();
-    	};
+    	{};
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
     	std::string		m_literal;
-
-    private:
-    	inline void strip(void)
-    	{
-
-    	}
     };
 
-    struct CharConstantAST : ConstExprAST
+    struct CharConstantAST : public ConstExprAST
     {
     	CharConstantAST(std::string& literal)
     	: m_literal(literal)
-    	{
-    		strip();
-    	};
+    	{};
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
     	std::string		m_literal;
-
-    private:
-    	inline void strip(void)
-    	{
-
-    	}
     };
 
-    struct NameAST : ExpressionAST
+    struct NameAST : public ExpressionAST
     {
         NameAST(std::string& n)
         : m_name(n)
         {};
+
+        ~NameAST() {};
 
         overrides llvm::Value* CodeGen(CodeGenContext& context);
 
@@ -174,12 +161,14 @@ namespace Blang
     };
 
 
-    struct VectorExprAST : ExpressionAST
+    struct VectorExprAST : public ExpressionAST
     {
     	VectorExprAST(ExpressionAST* vec, ExpressionAST* idx)
     	: m_vector(vec),
 		  m_vIndex(idx)
     	{};
+
+        ~VectorExprAST() {};
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
@@ -187,12 +176,14 @@ namespace Blang
     	ExpressionAST* m_vIndex;
     };
 
-    struct FuncCallExprAST : ExpressionAST
+    struct FuncCallExprAST : public ExpressionAST
     {
     	FuncCallExprAST(ExpressionAST* callExpr, ExpressionASTList* args)
     	: m_callExpr(callExpr),
 		  m_args(args)
     	{};
+
+        ~FuncCallExprAST() {};
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
@@ -201,13 +192,15 @@ namespace Blang
     };
 
 
-    struct UnaryExpressionAST : ExpressionAST
+    struct UnaryExpressionAST : public ExpressionAST
     {
     	UnaryExpressionAST(UnaryOp_t op, ExpressionAST* expr, bool isPostfix)
     	: m_op(op),
 		  m_expr(expr),
-		  m_isPostFix(isPostFix)
+		  m_isPostFix(isPostfix)
     	{};
+
+        ~UnaryExpressionAST() {};
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
@@ -216,13 +209,15 @@ namespace Blang
     	bool			m_isPostFix;
     };
 
-    struct BinaryExpressionAST : ExpressionAST
+    struct BinaryExpressionAST : public ExpressionAST
     {
     	BinaryExpressionAST(ExpressionAST* lh, BinaryOp_t op, ExpressionAST* rh)
     	: m_leftHand(lh),
 		  m_op(op),
 		  m_rightHand(rh)
     	{};
+
+        ~BinaryExpressionAST(){};
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
@@ -231,7 +226,7 @@ namespace Blang
     	ExpressionAST*	m_rightHand;
     };
 
-    struct ConditionalExpressionAST : ExpressionAST
+    struct ConditionalExpressionAST : public ExpressionAST
     {
     	ConditionalExpressionAST(ExpressionAST* condition, ExpressionAST* trueExpr, ExpressionAST* falseExpr)
     	: m_condition(condition),
@@ -248,7 +243,7 @@ namespace Blang
     	ExpressionAST* m_falseExpr;
     };
 
-    struct AssignmentAST : ExpressionAST
+    struct AssignmentAST : public ExpressionAST
     {
     	AssignmentAST(ExpressionAST* lh, AssignOp_t op, ExpressionAST* rh)
     	: m_leftHand(lh),
@@ -273,18 +268,18 @@ namespace Blang
 //////////////////////////////////////////////////////////////////////////////
 /////// STATEMENTS
 
-    struct StatementAST : NodeAST
+    struct StatementAST : public NodeAST
     {
     	StatementAST(){};
     	virtual ~StatementAST(){};
     };
 
-    struct AutoDeclAST : NodeAST
+    struct AutoDeclAST : public DeclAST
     {
-    	AutoDeclAST(DeclAST* decl, ConstExprAST* size)
-    	: m_decl(decl),
+    	AutoDeclAST(NameAST* name, ConstExprAST* size)
+    	: DeclAST(name),
 		  m_size(size)
-    	{};
+    	{ m_storage = kAuto; };
 
     	~AutoDeclAST(){};
 
@@ -295,7 +290,7 @@ namespace Blang
     };
 
 
-    struct AutoDeclStatementAST : StatementAST
+    struct AutoDeclStatementAST : public StatementAST
     {
     	AutoDeclStatementAST(AutoDeclASTList* autos)
     	: m_autos(autos)
@@ -309,7 +304,7 @@ namespace Blang
     };
 
 
-    struct ExtrnDeclLocalStatementAST : StatementAST
+    struct ExtrnDeclLocalStatementAST : public StatementAST
     {
     	ExtrnDeclLocalStatementAST(NameASTList* extrns)
     	: m_extrns(extrns)
@@ -322,7 +317,7 @@ namespace Blang
     	NameASTList*	m_extrns;
     };
 
-    struct LabelStatementAST : StatementAST
+    struct LabelStatementAST : public StatementAST
     {
     	LabelStatementAST(NameAST* name, StatementAST* statement)
     	: m_name(name),
@@ -337,7 +332,7 @@ namespace Blang
     	StatementAST* 	m_statement;
     };
 
-    struct CaseStatementAST : StatementAST
+    struct CaseStatementAST : public StatementAST
     {
     	CaseStatementAST(ConstExprAST* val, StatementAST* statement)
     	: m_val(val),
@@ -361,7 +356,7 @@ namespace Blang
     };
 
 
-    struct GotoStatementAST : StatementAST
+    struct GotoStatementAST : public StatementAST
     {
     	GotoStatementAST(NameAST* label)
     	: m_label(label)
@@ -374,7 +369,28 @@ namespace Blang
     	NameAST* m_label;
     };
 
-    struct StatementBlockAST : StatementAST
+    struct BreakStatementAST : public StatementAST
+    {
+        BreakStatementAST() {};
+        ~BreakStatementAST() {};
+
+        overrides llvm::Value* CodeGen(CodeGenContext& context);
+    };
+
+    struct ReturnStatementAST : public StatementAST
+    {
+        ReturnStatementAST(ExpressionAST* expr)
+        : m_expr(expr)
+        {};
+
+        ~ReturnStatementAST() {};
+
+        overrides llvm::Value* CodeGen(CodeGenContext& context);
+
+        ExpressionAST* m_expr;
+    };
+
+    struct StatementBlockAST : public StatementAST
     {
     	StatementBlockAST(StatementASTList* statements)
     	: m_statementList(statements)
@@ -387,7 +403,7 @@ namespace Blang
     	StatementASTList* m_statementList;
     };
 
-    struct IfStatementAST : StatementAST
+    struct IfStatementAST : public StatementAST
     {
     	IfStatementAST(ExpressionAST* expr, StatementAST* trueStmnt, StatementAST* falseStmnt)
     	: m_expr(expr),
@@ -404,7 +420,7 @@ namespace Blang
     	StatementAST*	m_falseStatement;
     };
 
-    struct WhileStatementAST : StatementAST
+    struct WhileStatementAST : public StatementAST
     {
     	WhileStatementAST(ExpressionAST* expr, StatementAST* statement)
     	: m_expr(expr),
@@ -419,7 +435,7 @@ namespace Blang
     	StatementAST*	m_statement;
     };
 
-    struct SwitchStatementAST : StatementAST
+    struct SwitchStatementAST : public StatementAST
     {
     	SwitchStatementAST(ExpressionAST* expr, StatementAST* statement)
     	: m_expr(expr),
@@ -434,9 +450,22 @@ namespace Blang
     	StatementAST*	m_statement;
     };
 
-    struct ExtrnDeclAST : ExtrnDefAST
+    struct ExpressionStatementAST : public StatementAST
     {
-    	ExtrnDeclAST(DeclAST* decl, IValASTList* init)
+        ExpressionStatementAST(ExpressionAST* expr)
+        : m_expr(expr)
+        {};
+
+        ~ExpressionStatementAST() {};
+
+        overrides llvm::Value* CodeGen(CodeGenContext& context);
+
+        ExpressionAST* m_expr;
+    };
+
+    struct ExtrnDeclAST : public ExtrnDefAST
+    {
+    	ExtrnDeclAST(DeclAST* decl, ConstExprASTList* init)
     	: m_decl(decl),
 		  m_init(init)
     	{};
@@ -446,13 +475,13 @@ namespace Blang
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
     	DeclAST*		m_decl;
-    	IValASTList*	m_init;
+    	ConstExprASTList*	m_init;
     };
 
 
-    struct FuncDeclAST : ExtrnDefAST
+    struct FuncDeclAST : public ExtrnDefAST
     {
-    	FuncDeclAST(NameAST* name, NameList* args, StatementAST* body)
+    	FuncDeclAST(NameAST* name, NameASTList* args, StatementAST* body)
     	: m_name(name),
 		  m_args(args),
 		  m_body(body)
@@ -466,7 +495,4 @@ namespace Blang
     	NameASTList*	m_args;
     	StatementAST*	m_body;
     };
-
-
-
 }

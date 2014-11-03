@@ -14,8 +14,10 @@ using namespace std;
 #define TOKEN(t)    t
 
 
-Blang::SizeType tokToST(const char* tok);
+Blang::SizeType numToST(const char* tok);
 
+char* stripChar(const char* tok);
+char* stripStr(const char* tok );
 
 unsigned int _line = 0;
 
@@ -24,7 +26,6 @@ unsigned int _line = 0;
 %option stack
 
 %x IN_COMMENT
-%x STR
 
 %%
 
@@ -44,12 +45,12 @@ unsigned int _line = 0;
 
 [a-zA-Z_][a-zA-Z0-9_.]* {   SAVE_STRING; return IDENT; }
 
-[0-9]+                  {   yylval.word = tokToST(yytext);   
+[0-9]+                  {   yylval.word = numToST(yytext);   
                             return WORD;  }
 
-\"(\\.|[^\\"])*\"       {   SAVE_STRING; return STRING; }
+\"(\\.|[^\\"])*\"       {   SAVE_STRING; puts(yylval.str->c_str()); return STRING; }
 
-\'(\\.|[^\\']){1,2}\'   {   SAVE_STRING; return CHAR;   }
+\'(\\.|[^\\']){1,8}\'   {   SAVE_STRING; puts(yylval.str->c_str()); return CHAR;   }
 
 "=|"                    {   return TOKEN(ASN_OR);  }
 "=&"                    {   return TOKEN(ASN_AND); }
@@ -115,20 +116,80 @@ unsigned int _line = 0;
 %%
 
 Blang::SizeType
-tokToST(const char* tok)
+numToST(const char* tok)
 {
     char* p;
     Blang::SizeType out;
 
+    int base = tok[0] == '0' ? 8 : 10; 
+
 #ifdef BLANG_IS64
     
-    out = strtoll(tok, &p, 10);
+    out = strtoll(tok, &p, base);
 
 #else
     
-    out = strtol(tok, &p, 10);
+    out = strtol(tok, &p, base);
 
 #endif
 
     return out;
+}
+
+
+char*
+stripChar(const char* tok)
+{
+    char* out;
+    int i = 1;
+
+    out = (char*)malloc(strlen(tok) - 1);
+
+    for(; i < strlen(tok)-1; i++)
+    {
+        switch(tok[i])
+        {
+            case '*':
+                i++;
+                switch(tok[i])
+                {
+                    case 'n':
+                        out[i-2] = '\n';
+                        break;
+
+                    case 'e':
+                        out[i-2] = -1;
+                        break;
+
+                    case '0':
+                        out[i-2] = 0;
+                        break;
+
+                    case '{':
+                    case '}':
+                    case '\'':
+                    case '"':
+                    case '*':
+                        out[i-2] = tok[i];
+                        break;
+                }
+                break;
+
+            case '\'':  //ignore closing '
+                continue;
+
+            default: out[i-1] = tok[i];
+            break;
+        }
+    }
+
+    out[i] = -1;
+
+    return out;
+}
+
+char*
+stripStr(const char* tok)
+{
+    return NULL;
 }
