@@ -57,7 +57,7 @@ namespace Blang
         ProgramAST() {};
         ~ProgramAST() {};
 
-        overrides llvm::Value* CodeGen(CodeGenContext& context);
+        //overrides llvm::Value* CodeGen(CodeGenContext& context);
 
         ExtrnDefASTList m_extrnDefs;
     };
@@ -285,7 +285,6 @@ namespace Blang
 
     	overrides llvm::Value* CodeGen(CodeGenContext& context);
 
-    	DeclAST* 		m_decl;
     	ConstExprAST*	m_size;
     };
 
@@ -489,7 +488,8 @@ namespace Blang
 
     	~FuncDeclAST(){};
 
-    	overrides llvm::Value*	CodeGen(CodeGenContext& context);
+    	//overrides llvm::Value*	CodeGen(CodeGenContext& context);
+        llvm::Function*     
 
     	NameAST*		m_name;
     	NameASTList*	m_args;

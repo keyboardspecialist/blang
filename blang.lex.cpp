@@ -1085,7 +1085,7 @@ YY_RULE_SETUP
 case 43:
 YY_RULE_SETUP
 #line 82 "blang.l"
-{   return TOKEN('|');   }
+{   return TOKEN('!');   }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP

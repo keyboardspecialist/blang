@@ -114,12 +114,12 @@ extrn_decl
     ;
 
 func_decl   
-    : name func_decl_parms statement	{ $$ = new Blang::FuncDeclAST($<name>1, $<name_list>2, $<statement>3); /*funcs are always extrn*/ }
+    : name func_decl_parms statement	{ $$ = new Blang::FuncDeclAST($<name>1, $<ival_list>2, $<statement>3); /*funcs are always extrn*/ }
     ;
 
 func_decl_parms  
     : '('               ')'	{ $$ = NULL; }
-    | '('   name_list   ')'	{ $$ = new Blang::NameASTList(*$<name_list>2); }
+    | '('   ival_list   ')'	{ $$ = new Blang::NameASTList(*$<ival_list>2); }
     ;
 
 name_list
@@ -135,7 +135,7 @@ ival_list
 decl
     : name					{ $$ = new Blang::DeclAST($<name>1); }	
     | name '['          ']' { $$ = new Blang::VectorDeclAST($<name>1, NULL); }
-    | name '[' constant ']' { $$ = new Blang::VectorDeclAST($<name>1, $<constant>2); }
+    | name '[' constant ']' { $$ = new Blang::VectorDeclAST($<name>1, $<constant>3); }
     ;
 
 statement   
@@ -365,29 +365,6 @@ constant
 
 %%
 
-int
-main(int argc, char* argv[])
-{
-    if(argc == 1)
-    {
-        cout << "Missing input file" << endl;
-        return 0;
-    }
-
-    FILE* fp;
-    if((fp = fopen(argv[1], "r")))
-    {
-        yyin = fp;
-        while(!feof(yyin))
-            yyparse();
-    }
-    else
-    {
-        cout << "Couldn't open file[" << argv[1] << "]" << endl;
-    }
-    
-    return 0;
-}
 
 void
 yyerror(const char* err)

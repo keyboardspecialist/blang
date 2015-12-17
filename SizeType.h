@@ -29,6 +29,7 @@
 #else
 #   pragma message "Building for 32-bit. SizeType int"
 #   define BLANG_SIZE int
+#	define BLANG_IS32
 #endif
 
 

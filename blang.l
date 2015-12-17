@@ -79,7 +79,7 @@ unsigned int _line = 0;
 
 "="                     {   return TOKEN('=');   }
 "-"                     {   return TOKEN('-');   }
-"!"                     {   return TOKEN('|');   }
+"!"                     {   return TOKEN('!');   }
 "|"                     {   return TOKEN('|');   }
 "&"                     {   return TOKEN('&');   }
 "^"                     {   return TOKEN('^');   }
@@ -123,7 +123,7 @@ numToST(const char* tok)
 
     int base = tok[0] == '0' ? 8 : 10; 
 
-#ifdef BLANG_IS64
+#ifdef BLANG_BUILD_64BIT
     
     out = strtoll(tok, &p, base);
 
